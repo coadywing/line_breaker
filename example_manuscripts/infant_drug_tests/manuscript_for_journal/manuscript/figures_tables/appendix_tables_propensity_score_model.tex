@@ -1,0 +1,54 @@
+\begin{table}[ht]
+\footnotesize
+\renewcommand{\arraystretch}{1.0}
+\centering
+\caption{Propensity Score Model}
+\begin{tabular}{l c}
+\toprule
+& (1) \\ \midrule
+Intercept                                  & -4.8949*** \\
+                                           & (0.5059)   \\
+Age 20-24                                  & 0.0513     \\
+                                           & (0.5059)   \\
+Age 25-29                                  & -0.0225    \\
+                                           & (0.5035)   \\
+Age 30-34                                  & -0.2443    \\
+                                           & (0.5035)   \\
+Age 35-39                                  & -0.3588    \\
+                                           & (0.5039)   \\
+Age 40-44                                  & -0.3345    \\
+                                           & (0.5053)   \\
+Age 45-49                                  & -0.1561    \\
+                                           & (0.5124)   \\
+Above Average NAS in County                & -0.5477*** \\
+                                           & (0.0448)   \\
+Any Maternal SUD                           & 0.2283***  \\
+                                           & (0.0488)   \\
+Any Prenatal Care                          & 0.0722*    \\
+                                           & (0.0349)   \\
+Above Average Overdose Mortality in County & 0.8008***  \\
+                                           & (0.0341)   \\
+Any Maternal Mental Health Diagnosis       & -0.1399*** \\
+                                           & (0.0407)   \\
+Any Maternal Hypertension                  & 0.2157***  \\
+                                           & (0.0419)   \\
+Medicaid                                   & 0.9602***  \\
+                                           & (0.0420)   \\
+Other Insurance                            & 0.1328**   \\
+                                           & (0.0460)   \\
+Low Birthweight                            & 0.4080***  \\
+                                           & (0.0799)   \\
+Premature Birth                            & -0.0884    \\
+                                           & (0.0749)   \\
+Four or More Encounters                    & 0.0656     \\
+                                           & (0.0467)   \\
+Mom Black                                  & 7.3683***  \\
+                                           & (0.0487)   \\
+Mom Other                                  & 2.9920***  \\
+                                           & (0.0352)   \\
+Num.Obs.                                   & 140562     \\ \bottomrule
+\end{tabular}
+\small
+\noindent + p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001
+\label{propensity_model}
+\end{table}

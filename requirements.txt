@@ -1,1 +1,1 @@
-pysbd
+pysbd==0.3.4

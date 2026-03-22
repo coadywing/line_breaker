@@ -1,0 +1,153 @@
+\section{SDUD Sample Construction and Data Quality}
+\label{sec:appendix_c}
+
+This appendix describes how we use the annual public use State Drug Utilization Data (SDUD) to construct a state $\times$ quarter balanced panel measuring prescription and reimbursement levels for GLP-1 prescription drugs. We started by compiling a list of 171 National Drug Codes (NDC codes) for GLP-1 receptor agonist medications using the National Library of Medicine's RxNorm/RxMix database.\footnote{The complete list of 171 NDC codes is available in the replication archive (\texttt{raw\_data/ndc/GLP1\_Meds\_FULL.csv}).} Table~\ref{tab:sdud_brands} summarizes the list by brand name, classified as an \emph{obesity-indicated} or a \emph{diabetes/cardiovascular-indicated} GLP-1 drug based on the drug's FDA-approved labeling.
+
+Our analysis uses SDUD data from 2019-Q1 through 2025-Q2. In the raw data, each observation is a state $\times$ quarter $\times$ utilization type (FFSU, MCOU) $\times$ NDC cell reporting units\_reimbursed, number\_of\_prescriptions, and medicaid\_amount\_reimbursed. We restrict to the 50 U.S.\ states and to the 171 GLP-1 NDC codes, yielding 46{,}271 observations on 84 unique NDC codes. Of these, 15{,}202 (32.9\%) are suppressed (fewer than 11 prescriptions) and 206 non-suppressed cells report missing or zero Medicaid spending. Table~\ref{tab:sdud_summary} reports summary statistics for the initial sample. We impute utilization and spending for suppressed and missing cells, identify and correct outlier spending amounts, and collapse the cleaned data to form a balanced state $\times$ quarter panel with separate outcome variables for obesity and diabetes/cardiovascular GLP-1 drugs. These corrections affect a small fraction of total prescriptions and spending and have a negligible effect on the analysis.
+
+\begin{table}[t]
+\caption{GLP-1 NDC Codes by Brand Name}
+\label{tab:sdud_brands}
+\begin{threeparttable}
+\begin{tabularx}{\textwidth}{lllRR}
+\toprule
+Brand name & Active ingredient & Classification & \makecell[r]{NDCs in\\reference list} & \makecell[r]{NDCs observed\\in SDUD} \\
+\midrule
+\multicolumn{5}{l}{\emph{Obesity-indicated}} \\
+Saxenda   & liraglutide  & Obesity   &  5 &  1 \\
+Wegovy    & semaglutide  & Obesity   & 13 & 10 \\
+Zepbound  & tirzepatide  & Obesity   & 21 & 15 \\
+\addlinespace
+\multicolumn{5}{l}{\emph{Diabetes/cardiovascular-indicated}} \\
+Adlyxin   & lixisenatide  & Diab./CV &  4 &  2 \\
+Bydureon  & exenatide ER  & Diab./CV &  7 &  4 \\
+Byetta    & exenatide     & Diab./CV & 19 &  4 \\
+Exenatide & exenatide (generic) & Diab./CV &  2 &  2 \\
+Liraglutide & liraglutide (generic) & Diab./CV & 10 &  4 \\
+Mounjaro  & tirzepatide   & Diab./CV & 19 & 12 \\
+Ozempic   & semaglutide   & Diab./CV & 21 & 11 \\
+Rybelsus  & semaglutide   & Diab./CV & 12 &  6 \\
+Soliqua   & lixisenatide/insulin glargine & Diab./CV &  4 &  1 \\
+Trulicity & dulaglutide   & Diab./CV & 22 &  9 \\
+Victoza   & liraglutide   & Diab./CV &  9 &  2 \\
+Xultophy  & liraglutide/insulin degludec  & Diab./CV &  3 &  1 \\
+\midrule
+\multicolumn{3}{l}{Total} & 171 & 84 \\
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}
+\footnotesize
+\item \emph{Notes.} The reference list contains 171 NDC codes identified through the National Library of Medicine's RxNorm/RxMix database. ``NDCs observed in SDUD'' is the number of distinct NDC codes appearing in the SDUD sample across all 50 states and quarters (2019-Q1 to 2025-Q2). The difference between the reference list and observed counts reflects NDC codes for package sizes or formulations that had no Medicaid prescriptions during the study period.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\input{outputs/tables/sdud_summary_c2}
+
+\subsection{Suppressed Cells}
+
+In cells with fewer than 11 prescriptions, the values of units\_reimbursed, number\_of\_prescriptions, and medicaid\_amount\_reimbursed are suppressed because of small-cell rules. By definition, these cells represent a tiny fraction of GLP-1 prescriptions and spending in any given state and quarter. Nevertheless, leaving them out of the analysis would bias our estimates of total utilization and spending down. For every suppressed cell, we set $\text{number\_of\_prescriptions} = 5$, the midpoint of the $[1, 10]$ range. Next, for each NDC code, we compute the median units-per-prescription ratio (UPR) across all unsuppressed records for that same NDC code. Since NDC codes define products with a fixed package size, the UPR is nearly constant across states (76\% of unsuppressed records fall within 10\% of the cross-state median; 90\% within 20\%). Provided that there are at least 3 unsuppressed observations from which to compute the median UPR for an NDC code, we set for suppressed cells $\text{units\_reimbursed} = 5 \times \text{median UPR}$. This resolves 14{,}657 of the 15{,}202 suppressed cells. For suppressed cells with NDC codes that have fewer than 3 unsuppressed cells in the data, we repeat the procedure using the cross-state median UPR computed at the brand level (pooling all NDC codes for the same brand). This resolves the remaining 545 suppressed cells. 
+
+After imputing prescriptions and units, we impute medicaid\_amount\_reimbursed using the following procedure.
+
+\paragraph{Tier~1: Within-state cross-type donor.} For each state $\times$ NDC $\times$ quarter, we compute the per-unit Medicaid reimbursement rate from the other utilization type (e.g., FFSU for a missing MCOU record) in the same cell. If a valid rate exists, we impute by setting $\text{medicaid\_amount\_reimbursed} = \text{units\_reimbursed} \times \text{per\_unit\_rate}$. This resolves 4{,}828 suppressed cells.
+
+\paragraph{Tier~2: Cross-state median.} For records where no within-state donor is available, we compute the median per-unit Medicaid reimbursement rate across all states that report valid data for the same NDC $\times$ quarter $\times$ utilization type and impute by multiplying the cell's units\_reimbursed by the cross-state median. This resolves an additional 9{,}042 suppressed cells.
+
+The remaining 1{,}332 suppressed cells have no valid Medicaid spending anywhere in the country for that NDC $\times$ quarter $\times$ utilization type. For these, we turn to acquisition-cost data:
+
+\paragraph{Tier~3: NADAC per-unit price.} We impute spending using the NADAC per-unit price for the same NDC and quarter. This resolves 345 suppressed cells.
+
+\paragraph{Tier~4: Brand-level median NADAC.} For records whose product group is not yet covered by NADAC at the time of the SDUD quarter, we impute using the median NADAC per-unit price across all records for the same brand name. This resolves 906 additional suppressed cells.
+
+\paragraph{Tier~5: Drug-class median NADAC.} The remaining 81 suppressed cells belong to brands with no NADAC coverage at all (Adlyxin and generic exenatide). For these records, we impute using the median NADAC per-unit price across all GLP-1 drugs in the same therapeutic class (obesity-indicated or diabetes/cardiovascular-indicated). This resolves all remaining suppressed cells.
+
+\subsection{Missing or Zero Medicaid Amounts}
+
+Beyond the suppressed cells, there were 206 non-suppressed records that report positive units but missing or zero Medicaid spending. All of these are managed-care (MCOU) records. Table~\ref{tab:sdud_missing} shows their distribution across states. Delaware accounts for the vast majority (183 of 206). The remaining cases are scattered across Wisconsin~(8), New York~(7), Hawaii~(4), Oregon~(3), and Kentucky~(1).
+
+Delaware illustrates how suppression and missing-amount problems can interact. Its fee-for-service records are entirely suppressed---every FFS cell has fewer than 11 prescriptions, so prescriptions, units, and spending were all imputed in the previous step. Meanwhile, Delaware's managed-care records are not suppressed but they report~\$0 in medicaid\_amount\_reimbursed across the board.
+
+We apply Tiers~1 and~2 of the spending imputation procedure described above. Tier~1 resolves 16 records from Kentucky~(1), New York~(7), and Wisconsin~(8)---the states where FFSU data is available to compute a within-state per-unit reimbursement rate. The remaining 190 records from Delaware~(183), Hawaii~(4), and Oregon~(3) are resolved by Tier~2.
+
+\begin{table}[t]
+\caption{Non-Suppressed SDUD Records with Missing or Zero Medicaid Amounts}
+\label{tab:sdud_missing}
+\begin{threeparttable}
+\begin{tabularx}{\textwidth}{lRRl}
+\toprule
+State & \makecell[r]{MCOU records\\affected} & \makecell[r]{\% of state\\MCOU records} & Imputation tier \\
+\midrule
+Delaware  & 183 & 26.4 & Tier 2 (cross-state median) \\
+Wisconsin &   8 & 34.8 & Tier 1 (within-state donor) \\
+New York  &   7 &  1.0 & Tier 1 (within-state donor) \\
+Hawaii    &   4 &  0.7 & Tier 2 (cross-state median) \\
+Oregon    &   3 &  0.4 & Tier 2 (cross-state median) \\
+Kentucky  &   1 &  0.1 & Tier 1 (within-state donor) \\
+\midrule
+Total     & 206 &  0.9 & \\
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}
+\footnotesize
+\item \emph{Notes.} This table covers the 206 non-suppressed records with positive units\_reimbursed but missing or zero medicaid\_amount\_reimbursed. All 206 are managed-care (MCOU) utilization type. The percentage column divides affected records by total MCOU records for the state (or all 50 states for the total row; 23{,}615 MCOU records overall).
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+
+\subsection{Aggregation: Combining Plan Types}
+
+After resolving all missing-amount records, we aggregate across plan types by summing units\_reimbursed, number\_of\_prescriptions, and medicaid\_amount\_reimbursed within each state $\times$ quarter $\times$ NDC code cell, collapsing the separate FFSU and MCOU rows into a single row. This yields 32{,}683 post-aggregation cells. All subsequent corrections operate on these aggregated records.
+
+\subsection{Implausible Positive Medicaid Amounts}
+
+After aggregation, 416 records have positive medicaid\_amount\_reimbursed but a per-unit rate that falls below 50\% or above 300\% of the cross-state median for the same NDC $\times$ quarter, computed from states with at least five valid observations. These outliers inflate the mean ratio of National Average Drug Acquisition Cost (NADAC) to Medicaid per-unit price from 1.04 to 255, while the median remains stable at 1.01.
+
+To distinguish whether outliers reflect errors in dollars or in units, we exploit the cross-state stability of the UPR established above. When a record's per-unit rate is implausible but its UPR is normal, the error is in the dollar amount; when the UPR is also anomalous, the units themselves are suspect. 
+
+For every state $\times$ NDC $\times$ quarter cell, let $r_{std}^{mpu}$ be the record's per-unit Medicaid rate divided by the cross-state median per-unit rate for that NDC. A record is flagged as an outlier if $r_{std}^{mpu} < 0.5$ or $r_{std}^{mpu} > 3.0$.  To distinguish errors in dollar amounts from errors in units, we define two additional ratios:
+%
+\begin{itemize}
+    \item $r_{std}^{upr}$ is the record's units per prescription divided by the cross-state median of units per prescription.
+    \item $r_{std}^{rx}$ is the record's number\_of\_prescriptions divided by the cross-state median prescription count.
+\end{itemize}
+%
+We classify the outliers as follows:
+\begin{itemize}
+    \item \textbf{Type~A (dollar error):} If $r_{std}^{upr} \in [0.5, 2.0]$ then units appear correct and we assume that the case is an outlier because medicaid\_amount\_reimbursed is wrong. We correct the error by replacing medicaid\_amount\_reimbursed with the cross-state median per-unit rate multiplied by the record's units\_reimbursed. This accounts for 376 records, concentrated in DE, HI, WV, MO, KS, and NJ.
+    \item \textbf{Type~B (unit error):} If $r_{std}^{upr} \notin [0.5, 2.0]$ but $r_{std}^{rx} \in [0.5, 2.0]$, prescriptions are plausible but units\_reimbursed are likely wrong. Correction: reconstruct units as number\_of\_prescriptions multiplied by the cross-state median UPR, then set dollars equal to the median per-unit rate multiplied by corrected units. This accounts for 14 records.
+    \item \textbf{Type~C (both wrong):} Both $r_{std}^{upr}$ and $r_{std}^{rx}$ fall outside $[0.5, 2.0]$. Neither units nor prescriptions are reliable. Correction: set units\_reimbursed equal to reported dollars divided by the cross-state median per-unit rate, preserving the spending level while correcting the per-unit rate by construction. This accounts for 26 records.
+\end{itemize}
+%
+When the UPR ratio cannot be computed due to suppressed number\_of\_prescriptions, the record defaults to the Type~A correction (units are assumed correct). When the UPR is abnormal but the prescription ratio cannot be computed, the record defaults to the Type~B correction (prescriptions are assumed correct).
+
+\begin{table}[t]
+\caption{SDUD Data Quality Corrections}
+\label{tab:sdud_corrections}
+\begin{threeparttable}
+\begin{tabularx}{\textwidth}{llRRl}
+\toprule
+Tier & Type & \makecell[r]{Records\\corrected} & \makecell[r]{\% of\\dataset} & Field(s) replaced \\
+\midrule
+1 & Within-state cross-type donor & 16  & 0.05 & Medicaid amount \\
+2 & Cross-state median           & 190 & 0.58 & Medicaid amount \\
+3A & Dollar error          & 376 & 1.15 & Medicaid amount \\
+3B & Unit error            & 14  & 0.04 & Units, Medicaid amount \\
+3C & Both wrong            & 26  & 0.08 & Units \\
+\midrule
+\multicolumn{2}{l}{Total} & 622 & 1.90 & \\
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}
+\footnotesize
+\item \emph{Notes.} The dataset contains 32{,}683 post-aggregation state $\times$ NDC $\times$ quarter records covering 50 states from 2019-Q1 to 2025-Q2. Tiers~1 and~2 operate on pre-aggregation utilization-type records and impute spending for all records with missing or zero Medicaid amounts---15{,}202 suppressed cells and 206 non-suppressed records. Counts shown reflect only the 206 non-suppressed records; the five-tier spending imputation for suppressed cells (resolving all 15{,}202) is described in the Suppressed Cells subsection. Tier~3 in this table operates on post-aggregation records and corrects implausible positive amounts. Each corrected record is flagged with the imputation tier and type.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsection{Collapse to State $\times$ Quarter Panel}
+
+The final step aggregates the 32{,}683 NDC-level records into a balanced state $\times$ quarter panel. For each state and quarter, we sum prescriptions, units reimbursed, gross Medicaid spending, estimated rebates, and net-of-rebate spending across all NDC codes, producing separate totals for obesity GLP-1 drugs, diabetes/cardiovascular GLP-1 drugs, and all GLP-1 drugs combined. Net spending is defined as $\max(\text{gross Medicaid spending} - \text{estimated rebates}, 0)$; see Appendix~\ref{sec:appendix_b} for the rebate estimation methodology.
+
+We construct a complete grid of 50 states $\times$ 26 quarters (2019-Q1 through 2025-Q2) and merge the aggregated SDUD totals onto this frame. State $\times$ quarter cells with no observed GLP-1 prescriptions in the SDUD---for example, early quarters for newly launched drugs like Zepbound---are filled with zeros for all outcome variables. The resulting balanced panel of 1{,}300 state $\times$ quarter observations is merged with Medicaid enrollment data and GLP-1 coverage information to form the analysis dataset used in the main results.

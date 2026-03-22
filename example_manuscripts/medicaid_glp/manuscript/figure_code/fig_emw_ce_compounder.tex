@@ -1,0 +1,34 @@
+\begin{figure}[!htbp]
+  \centering
+
+  % Top row: Levels
+  \begin{subfigure}[t]{0.48\textwidth}
+    \caption{Online GLP-1 Spending Levels\\{\small (10 State Design)}}
+    \includegraphics[width=\textwidth]{outputs/figures/emw_weighted/10state/levels_10state_spending_ce.pdf}
+    \label{fig:emw_ce_levels_10state_compounder}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.48\textwidth}
+    \caption{Online GLP-1 Spending Levels\\{\small (7 State Design)}}
+    \includegraphics[width=\textwidth]{outputs/figures/emw_weighted/7state/levels_7state_spending_ce.pdf}
+    \label{fig:emw_ce_levels_7state_compounder}
+  \end{subfigure}
+
+  \vspace{1em}
+
+  % Bottom row: Event Studies
+  \begin{subfigure}[t]{0.48\textwidth}
+    \caption{Online GLP-1 Spending Effects\\{\small (10 State Design)}}
+    \includegraphics[width=\textwidth]{outputs/figures/emw_weighted/10state/result_10state_spending_ce.pdf}
+    \label{fig:emw_ce_result_10state_compounder}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.48\textwidth}
+    \caption{Online GLP-1 Spending Effects\\{\small (7 State Design)}}
+    \includegraphics[width=\textwidth]{outputs/figures/emw_weighted/7state/result_7state_spending_ce.pdf}
+    \label{fig:emw_ce_result_7state_compounder}
+  \end{subfigure}
+
+  \caption{Online GLP-1 spending from Consumer Edge data (enrollee-month weighted). Panels (a) and (b) show mean spending levels by event time for treatment and control groups; panels (c) and (d) show event study estimates. Left panels use the 10-state design; right panels use the 7-state design.}
+  \label{fig:emw_ce_compounder_combined}
+\end{figure}

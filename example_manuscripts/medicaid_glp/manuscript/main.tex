@@ -1,0 +1,70 @@
+\documentclass[12pt]{article}
+\usepackage{manuscript/preamble_code/paper}
+\usepackage{manuscript/preamble_code/math}
+\addbibresource{manuscript/references.bib}
+
+\title{Medicaid Coverage for Obesity Medications: \\ Utilization and Net-of-Rebate Spending}
+\author{Coady Wing, Wei-Lun Lo, Maddie Potter, \\
+Tarik Yuce, Alberto Ortega, John Cawley, Thuy Nguyen, Kosali Simon}
+
+% Add the macros where results are stored.
+\input{outputs/tables/result_numbers}
+\input{outputs/tables/budget_impact_numbers}
+
+\begin{document}
+
+\pagenumbering{roman}
+\maketitle
+\thispagestyle{empty}
+\begin{abstract}
+    \input{manuscript/00_abstract}
+\end{abstract}
+
+\newpage
+\pagenumbering{arabic}
+
+\section{Introduction}
+\input{manuscript/01_introduction}
+
+\section{Background}
+\input{manuscript/02_background}
+
+\section{Empirical Strategy}\label{sec:methods}
+\input{manuscript/03_methods}
+
+\section{Data}
+\input{manuscript/04_data}
+
+\section{Results}
+\input{manuscript/05_results}
+
+\section{Discussion}
+\input{manuscript/06_discussion}
+
+\clearpage
+\input{manuscript/07_exhibits}
+
+\newpage
+\printbibliography
+
+\appendix
+\clearpage
+\numberwithin{figure}{section}
+\numberwithin{table}{section}
+\numberwithin{equation}{section}
+
+\begin{center}
+{\LARGE\bfseries Appendix}
+\end{center}
+\vspace{1em}
+
+\input{manuscript/08_methods_appendix}
+\clearpage
+
+\input{manuscript/09_rebate_appendix}
+\clearpage{}
+
+\input{manuscript/10_sdud_cleaning_appendix}
+\clearpage{}
+
+\end{document}

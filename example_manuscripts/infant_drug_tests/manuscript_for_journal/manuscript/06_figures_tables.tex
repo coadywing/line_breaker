@@ -1,0 +1,80 @@
+% Table 1 -  Maternal and Infant Characteristics by Racial Group of Infant
+\include{figures_tables/summary_table}
+
+% Table 2 - Inverse Propensity Score Weighting Decomposition Results
+\include{figures_tables/gap_testing_ipw}
+
+% Figure 1 -- Testing rates and Postive testing rates over time by race.
+\begin{landscape}
+\begin{figure}[htbp]
+    \centering
+    \caption{Testing Rate and Positive Testing Rate by Racial Group of Infant by Year}
+    \includegraphics[width=1.3\textwidth]{../results/testing_race_year_race2.pdf}
+    \label{fig:figure_1_testing_positive_by_year}
+\small
+\parbox{\linewidth}{
+Note: The left panel shows the testing rate by year by racial group with the 95\% confidence interval. The right panel shows the positive testing rate by year by racial group with the 95\% confidence interval. The testing rate is calculated as the total number of infants tested divided by the total number of births in that year for each racial group. The positive testing rate is the number of infants with a positive test divided by the total number of infants tested in that year for each racial group.
+}
+\end{figure}
+\end{landscape}
+
+% Figure 2 -- Testing rates by maternal substance use history and race.
+\begin{landscape}
+    \begin{figure}[htbp]
+    \centering
+    \caption{Testing Rates by Racial Group of Infant and Maternal Substance Use History}
+    \includegraphics[width=1.3\textwidth]{../results/testing_rate_sud_history.pdf}
+    \label{fig:figure_testing_sud}
+    \centering
+\small 
+\parbox{\linewidth}{
+Note: The left panel shows the testing rate by year by racial group of infant with mothers without a history of substance use disorder (those without any previous diagnosis code for SUD in the EMR data). The right panel shows the testing rate by year and racial group of infants with mothers with a history of SUD. The testing rate is calculated as the number of infants tested in the given year, racial group, and maternal substance use history divided by the total number of infants born that year in the given racial group and maternal substance use history category.
+}
+\end{figure}
+\end{landscape}
+
+
+% Figure 3 -- Positive test rates by maternal substance use history and race.
+\begin{landscape}
+    \begin{figure}[htbp]
+    \centering
+    \caption{Positive Testing Rates by Racial Group of Infant and Maternal Substance Use History}
+    \includegraphics[width=1.3\textwidth]{../results/positive_rate_sud_history.pdf}
+    \label{fig:figure_positive_sud}
+    \centering
+\small 
+\parbox{\linewidth}{
+Note: The left panel shows the positive testing rate by year by racial group of infant for those with mothers without a history of substance use disorder (SUD). The right panel shows the positive testing rate by year by racial group of infant for those with mothers with a history of SUD. The positive testing rate is calculated as the number of infants with a positive test in the given year, racial group, and maternal substance use history category divided by the total number of infants tested for that group. 
+}
+\end{figure}
+\end{landscape}
+
+% Figure 4 -- County NAS and Testing Rates By Race
+\begin{landscape}
+    \begin{figure}[htbp]
+    \centering
+    \caption{Relationship between County NAS Incidence and County Average Testing Rate by Racial Group of Infant}
+    \includegraphics[width=1.3\textwidth]{../results/NAS_county_tested_all_weightbirths.pdf}
+    \label{fig:figure_nas_test}
+    \centering
+\small 
+\parbox{\linewidth}{
+Note: The left panel shows the relationship between the testing rate among White infants in the infant's county of residence and the county-level neonatal abstinence syndrome incidence per 100 births (all racial groups). Each point in the figure shows the average testing rate among White infants and the NAS incidence per 100 births in that county, and the size of the dot is weighted by the number of births in that county. The fitted line is a weighted linear regression with weighting based on the number of infants born in the county. The coefficient from the regression is 0.049 which means that an increase in the county-level NAS incidence of 1 is correlated with an increase in the county-level testing rate of 4.9 percentage points among White infants. Similarly, the right panel shows the relationship between the county-level NAS incidence per 100 births with the county-level testing rate of Black infants. The coefficient from the weighted linear regression is 0.072, which means that a 1 unit increase in the NAS incidence per 100 births is associated with a 7.2 percentage point increase in the testing rate of Black infants. 
+}
+\end{figure}
+\end{landscape}
+
+% Figure 5 -- Average testing rates after reweighting
+\begin{landscape}
+\begin{figure}[htbp]    
+\centering 
+\caption{Average Testing Rate by Racial Group of Infant and Reweighted Black Average for Decomposition}
+\includegraphics[width=1\textwidth]{../results/observed_reweighted_means_labeled.pdf}
+\label{fig:testing_rates_reweighted}
+\centering
+\small
+\parbox{\linewidth}{
+Note:  This figure shows the average observed and reweighted testing rates by year to go along with the decomposition. The Black observed and White observed lines with the 95\% confidence intervals are the same as Figure 1. The Black reweighted line shows what the average testing rate for Black infants would be if they looked like White infants. The line is lower than the Black observed line but does not overlap with the White observed line. Across all years, the difference between the observed Black and reweighted Black testing rates accounts for 38.6\% of the difference in the observed Black and White testing rate. The difference between the reweighted Black and observed White average testing rates accounts for 61.4\% of the overall gap. 
+}
+\end{figure}
+\end{landscape}

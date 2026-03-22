@@ -1,0 +1,26 @@
+\begin{table}[t]
+  \centering
+  \begin{threeparttable}
+  \caption{Summary Statistics: Pre-Aggregation SDUD Sample}
+  \label{tab:sdud_summary}
+  \begin{tabularx}{\textwidth}{lRRRRR}
+    \toprule
+    Variable & Mean & SD & Min & Max & N \\
+    \midrule
+    Units reimbursed & 4,284.1 & 17,986.8 & 5.5 & 873,912.5 & 31,069 \\
+    Prescriptions & 975 & 3,342 & 11 & 108,462 & 31,069 \\
+    Medicaid reimbursement (\$) & 961,034.70 & 3,520,741.19 & 0.01 & 108,738,189.82 & 30,863 \\
+    Suppressed & 0.329 & 0.470 & 0 & 1 & 46,271 \\
+    \midrule
+    \multicolumn{6}{l}{Observations: 46,271} \\
+    \multicolumn{6}{l}{Unique states: 50} \\
+    \multicolumn{6}{l}{Unique NDC codes: 84} \\
+    \multicolumn{6}{l}{Plan types: 2 (FFSU, MCOU)} \\
+    \bottomrule
+  \end{tabularx}
+  \begin{tablenotes}
+    \footnotesize
+    \item \emph{Notes.} The sample contains all GLP-1 SDUD records for 50 U.S.\ states from 2019-Q1 through 2025-Q2, before any imputation or aggregation. Each observation is a state $\times$ quarter $\times$ plan type $\times$ NDC code cell. Units reimbursed and prescriptions are missing for suppressed cells (fewer than 11 prescriptions). Medicaid reimbursement statistics exclude suppressed cells and 206 non-suppressed cells with zero amounts. The suppressed indicator equals one for cells below the disclosure threshold.
+  \end{tablenotes}
+  \end{threeparttable}
+\end{table}

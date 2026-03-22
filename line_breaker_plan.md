@@ -90,18 +90,56 @@ Sequential processing ensures two rapid pushes don't collide.
 
 ## 3. Parser Design — Detailed Specs
 
-### Block-level classification
+### Two-pass block scanner
 
-Split file on blank lines (`\n\n`). Classify each block:
+Naively splitting on blank lines (`\n\n`) fails when LaTeX environments contain internal blank lines — a `\begin{figure}...\end{figure}` with a blank line before `\caption{}` would be split into separate blocks, orphaning the `\end{figure}` and exposing the caption to sentence splitting.
+
+**Pass 1 — Environment-aware grouping (line-level scan):**
+
+Scan the file line by line, tracking `\begin{env}`/`\end{env}` nesting depth. While inside a protected environment (depth > 0), blank lines do NOT create block boundaries — all lines are accumulated into a single block. Only blank lines at nesting depth 0 create block boundaries.
+
+Similarly, track fence state for code fences (`` ``` ``), Quarto divs (`:::`), and YAML frontmatter (`---`). While inside a fence, blank lines are absorbed into the current block.
+
+```python
+def scan_blocks(lines):
+    """Split lines into blocks, respecting environment nesting."""
+    blocks = []
+    current = []
+    env_depth = 0
+    fence_open = False  # code fence, quarto div, or YAML frontmatter
+
+    for line in lines:
+        # Track \begin{} / \end{} nesting
+        env_depth += count_begins(line) - count_ends(line)
+
+        # Track fence state (```, :::, ---)
+        if is_fence_toggle(line):
+            fence_open = not fence_open
+
+        if line.strip() == '' and env_depth == 0 and not fence_open:
+            if current:
+                blocks.append(current)
+                current = []
+            # Preserve blank lines as empty separator blocks
+            blocks.append([line])
+        else:
+            current.append(line)
+
+    if current:
+        blocks.append(current)
+    return blocks
+```
+
+**Pass 2 — Block classification:**
+
+After grouping, classify each block:
 
 **PROTECTED blocks (preserved verbatim):**
 
 | Pattern | File types |
 |---------|-----------|
-| `\begin{equation}`, `\begin{align}`, `\begin{gather}`, `\begin{multline}`, `\begin{eqnarray}` (and `*` variants) | .tex |
+| Any block containing `\begin{env}` where env is in PROTECTED_ENVS | .tex |
 | `\[...\]`, `$$...$$` | .tex, .md, .qmd |
-| `\begin{table}`, `\begin{figure}`, `\begin{tikzpicture}`, `\begin{verbatim}`, `\begin{lstlisting}` | .tex |
-| `\begin{itemize}`, `\begin{enumerate}`, `\begin{description}` | .tex |
 | Comment-only blocks (all lines start with `%`) | .tex |
 | Pure LaTeX command blocks (all lines start with `\` or `%`) | .tex |
 | YAML frontmatter (`---...---`) | .md, .qmd |
@@ -112,16 +150,72 @@ Split file on blank lines (`\n\n`). Classify each block:
 
 **PROSE blocks → process with split or join.**
 
+This two-pass approach ensures that `\begin{figure}...\caption{...}...\end{figure}` is always a single protected block, regardless of internal blank lines.
+
 ### Inline protection (within prose blocks)
 
-Before sentence tokenization, replace these with unique placeholders (order matters — larger patterns first):
+Before sentence tokenization, replace these with unique placeholders. Order matters — process from outermost structures inward so that nested constructs are captured as part of their parent:
 
-1. **Inline math:** `$...$` (non-greedy, must not match `$$`)
+1. **LaTeX commands with arguments (balanced-brace matching):**
+   - Do NOT use a simple regex like `\\cmd\{[^}]*\}` — it fails on nested braces:
+     ```
+     \footnote{See \citet{smith2024} for details.}
+     % Simple regex matches: \footnote{See \citet{smith2024}
+     % Leaves orphaned:     } for details.}
+     ```
+   - Instead, use a custom function that counts brace depth:
+     ```python
+     def find_command_spans(text):
+         """Find all \\command{...} spans, handling nested braces.
+
+         Returns list of (start, end) tuples for each complete command.
+         Handles: \\cmd{...}, \\cmd[...]{...}, \\cmd{...}{...}
+         Also handles starred commands: \\section*{...}
+         """
+         spans = []
+         i = 0
+         while i < len(text):
+             if text[i] == '\\' and i + 1 < len(text) and text[i + 1].isalpha():
+                 start = i
+                 # Skip command name
+                 i += 1
+                 while i < len(text) and text[i].isalpha():
+                     i += 1
+                 # Skip optional star (e.g., \section*{...})
+                 if i < len(text) and text[i] == '*':
+                     i += 1
+                 # Consume optional [...] and required {...} groups
+                 while i < len(text) and text[i] in ('[', '{'):
+                     opener = text[i]
+                     closer = ']' if opener == '[' else '}'
+                     depth = 1
+                     i += 1
+                     while i < len(text) and depth > 0:
+                         if text[i] == '\\' and i + 1 < len(text):
+                             i += 2  # skip escaped char (\{, \}, \\, etc.)
+                             continue
+                         if text[i] == opener:
+                             depth += 1
+                         elif text[i] == closer:
+                             depth -= 1
+                         i += 1
+                     # After closing, check for more [...]{...} groups
+                 if i > start + 1:  # only record if we consumed more than just "\"
+                     spans.append((start, i))
+             else:
+                 i += 1
+         return spans
+     ```
+   - **Key details in the brace-tracking loop:**
+     - Escape handling: if current char is `\`, skip it and the next char — this prevents `\{` and `\}` from affecting depth
+     - Depth tracking uses the *matching* delimiter: inside `{...}`, `{` increments and `}` decrements; inside `[...]`, `[` increments and `]` decrements
+     - After one group closes, the `while` loop checks for additional groups (e.g., `\cmd[opt]{arg1}{arg2}`)
+   - This correctly handles: `\textbf{\textit{text.}}`, `\footnote{See \citet{smith2024}.}`, `\section*{Introduction}`, `\href{url}{text with \textbf{bold}.}`, `\rxObSevenNineEmw{}`
+
+2. **Inline math:** `$...$` (non-greedy, must not match `$$`)
    - Pattern: `(?<!\$)\$(?!\$)(?:[^$\\]|\\.)*\$(?!\$)`
-
-2. **LaTeX commands with arguments:** `\command{...}`, `\command[...]{...}`
-   - Pattern: `\\[a-zA-Z]+(?:\[[^\]]*\])*\{[^}]*\}`
-   - Catches: `\textit{...}`, `\citet{...}`, `\citep{...}`, `\autoref{...}`, etc.
+   - Applied after command protection, so math inside already-protected commands (like `\footnote{When $x > 0$...}`) is captured as part of the command span and not double-processed
+   - Applied after line collapsing, so multi-line inline math (rare but possible) is already on one line
 
 3. **Markdown citations:** `[@key]`, `[@key1; @key2]`, `[@key, p. 5]`
    - Pattern: `\[(?:@[^\]]+)\]`
@@ -138,41 +232,89 @@ class ProtectionManager:
         self.replacements = {}  # placeholder → original text
 
     def protect(self, text, pattern, flags=0):
-        """Replace all matches with unique placeholders."""
+        """Replace all regex matches with unique placeholders."""
         def replacer(match):
             key = f"__PROTECTED_{uuid.uuid4().hex[:12]}__"
             self.replacements[key] = match.group(0)
             return key
         return re.sub(pattern, replacer, text, flags=flags)
 
+    def protect_spans(self, text, spans):
+        """Replace spans (from balanced-brace matcher) with placeholders.
+
+        spans: list of (start, end) tuples, processed in reverse order
+        so that indices remain valid after each replacement.
+        """
+        for start, end in sorted(spans, reverse=True):
+            key = f"__PROTECTED_{uuid.uuid4().hex[:12]}__"
+            self.replacements[key] = text[start:end]
+            text = text[:start] + key + text[end:]
+        return text
+
     def restore(self, text):
-        """Restore all placeholders with original content."""
-        for key, value in self.replacements.items():
-            text = text.replace(key, value)
+        """Restore all placeholders with original content.
+
+        Iterates until stable, since protected spans may contain
+        other placeholders (e.g., \\footnote{...\\citet{...}...}).
+        """
+        changed = True
+        while changed:
+            changed = False
+            for key, value in self.replacements.items():
+                if key in text:
+                    text = text.replace(key, value)
+                    changed = True
         return text
 ```
+
+### Structural command lines
+
+Lines that consist entirely of a LaTeX structural command must stay on their own line — they should never be collapsed into adjacent prose. These include:
+
+- `\section{...}`, `\subsection{...}`, `\subsubsection{...}`, `\paragraph{...}` (including starred variants like `\section*{...}`)
+- `\label{...}`, `\input{...}`, `\include{...}`
+- `\maketitle`, `\tableofcontents`, `\newpage`, `\clearpage`
+- `\begin{...}`, `\end{...}` (when at prose level, not inside a protected environment)
+
+Detection: a line is a structural command line if `line.strip()` starts with `\` and either contains no prose text after the command, or is a sectioning command (which should stay on its own line even if followed by text on the same line). Must handle starred variants — match the command name followed by an optional `*` before `{`.
+
+In split mode, structural command lines act as segment boundaries — they emit themselves as standalone lines and do not participate in sentence segmentation. Prose lines between them are collapsed and split normally.
+
+### Inline comment handling
+
+Lines like `This is prose. % this is a comment` are common in LaTeX. Before sentence segmentation:
+1. Strip trailing `% comment` from each line (matching `\s*(?<!\\)%.*$`)
+2. Run sentence segmentation on the prose
+3. Re-attach comments to the line they came from
+
+In join mode, comments complicate line collapsing — a line ending in `% comment` should not be joined with the next line (the `%` makes LaTeX ignore the newline, but joining would change semantics). Preserve lines with trailing comments as-is.
 
 ### Split mode (`--split`)
 
 For each PROSE block:
-1. Collapse existing line breaks within the block into spaces: `re.sub(r'\n(?!\n)', ' ', block)`
-2. Normalize multiple spaces: `re.sub(r'  +', ' ', text)`
-3. Protect inline spans with placeholders
-4. Run `pysbd.Segmenter(language="en", clean=False).segment(text)`
-5. Restore placeholders in each sentence
-6. Join sentences with `\n`
+1. Identify structural command lines and extract them as standalone segments
+2. For remaining prose runs between structural lines:
+   a. Collapse existing line breaks into spaces: `re.sub(r'\n(?!\n)', ' ', run)`
+   b. Normalize multiple spaces: `re.sub(r'  +', ' ', text)`
+   c. Strip and stash trailing LaTeX comments
+   d. Protect inline spans with placeholders (balanced-brace matcher, then regex patterns)
+   e. Run `pysbd.Segmenter(language="en", clean=False).segment(text)`
+   f. Restore placeholders in each sentence
+   g. Re-attach trailing comments
+3. Reassemble: structural lines + split prose, joined with `\n`
 
 ### Join mode (`--join`)
 
 For each PROSE block:
-1. Collapse non-blank newlines into spaces: `re.sub(r'\n(?!\n)', ' ', block)`
-2. Result: one line per paragraph
+1. Identify structural command lines — keep on their own line
+2. For remaining prose runs between structural lines:
+   a. If any line has a trailing `%` comment, preserve that line as-is
+   b. Otherwise collapse non-blank newlines into spaces: `re.sub(r'\n(?!\n)', ' ', run)`
+3. Reassemble: structural lines + joined prose
 
 No NLP needed for join — it's purely mechanical.
 
-### Mixed prose/environment blocks (.tex)
-
-Some blocks contain interleaved prose and LaTeX environments. Handle with a line-level scanner:
+### Protected environments list
 
 ```python
 PROTECTED_ENVS = {
@@ -184,10 +326,19 @@ PROTECTED_ENVS = {
     'proof', 'theorem', 'lemma', 'proposition', 'corollary',
     'definition', 'assumption', 'remark', 'example',
     'adjustwidth', 'threeparttable', 'subfigure',
+    'longtable', 'longtable*', 'landscape',
 }
 ```
 
-Track `\begin{env}` / `\end{env}` nesting. Accumulate prose lines between environments, process them, and reassemble.
+These are used by both the block scanner (Pass 1) and block classifier (Pass 2). Any block containing a `\begin{env}` where env is in this set is protected verbatim.
+
+### File I/O conventions
+
+- **Encoding:** Open all files as UTF-8 (`open(path, encoding='utf-8')`). If a file fails to decode, print a warning and skip it — do not crash or corrupt the file.
+- **Trailing newline:** Preserve the file's original ending. If the file ended with `\n`, the output ends with `\n`. If not, don't add one.
+- **Line endings:** Normalize to `\n` internally. On write, use `\n` (Unix line endings) — this is standard for git-tracked files.
+- **Glob expansion:** When `--files` is used, each line in the file list is passed through `glob.glob()` so patterns like `slides/**/*.qmd` work. Lines starting with `#` are comments. Empty lines are skipped.
+- **Missing files:** If a listed file does not exist, print a warning and skip it.
 
 ### Idempotency
 
@@ -236,6 +387,8 @@ The same file list is used in both `--split` and `--join` directions.
 
 ## 5. GitHub Actions Workflow YAML (for consumer repos)
 
+**Security note:** Never interpolate `${{ github.ref_name }}` or other GitHub context directly in `run:` blocks — a branch named `; rm -rf /` would execute. Always pass through environment variables.
+
 ```yaml
 name: Semantic Line Break
 
@@ -257,7 +410,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: semantic-linebreak-split
+  group: semantic-linebreak
   cancel-in-progress: false
 
 jobs:
@@ -272,22 +425,41 @@ jobs:
           fetch-depth: 0
 
       - name: Fetch source branch
-        run: git fetch origin ${{ github.ref_name }}
+        env:
+          SOURCE_BRANCH: ${{ github.ref_name }}
+        run: git fetch origin "$SOURCE_BRANCH"
 
-      - name: Get changed prose files
+      - name: Get changed prose files (intersected with .linebreakfiles)
         id: changed
+        env:
+          SOURCE_BRANCH: ${{ github.ref_name }}
         run: |
-          FILES=$(git diff --name-only main..origin/${{ github.ref_name }} -- \
+          # Get files changed on source branch
+          CHANGED=$(git diff --name-only "main..origin/$SOURCE_BRANCH" -- \
             '*.tex' '*.md' '*.qmd' \
             ':!CLAUDE.md' ':!README.md' ':!*.sty' ':!*.bib' \
             ':!AI Tools/*' ':!.github/*' ':!outputs/*')
-          echo "files=$FILES" >> $GITHUB_OUTPUT
+
+          # Intersect with .linebreakfiles — only process files that are
+          # both changed AND listed in the file manifest
+          if [ -f .linebreakfiles ]; then
+            LISTED=$(grep -v '^#' .linebreakfiles | grep -v '^$')
+            FILES=$(comm -12 <(echo "$CHANGED" | sort) <(echo "$LISTED" | sort))
+          else
+            FILES="$CHANGED"
+          fi
+
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Checkout prose files from source
         if: steps.changed.outputs.files != ''
+        env:
+          SOURCE_BRANCH: ${{ github.ref_name }}
         run: |
-          for f in ${{ steps.changed.outputs.files }}; do
-            git checkout origin/${{ github.ref_name }} -- "$f" 2>/dev/null || true
+          echo "${{ steps.changed.outputs.files }}" | while IFS= read -r f; do
+            [ -n "$f" ] && git checkout "origin/$SOURCE_BRANCH" -- "$f" 2>/dev/null || true
           done
 
       - name: Run semantic line breaker (split)
@@ -299,6 +471,9 @@ jobs:
 
       - name: Commit and push
         if: steps.changed.outputs.files != ''
+        env:
+          SOURCE_BRANCH: ${{ github.ref_name }}
+          SOURCE_SHA: ${{ github.sha }}
         run: |
           git config user.name "semantic-linebreak-bot"
           git config user.email "bot@noreply"
@@ -306,11 +481,13 @@ jobs:
           git diff --cached --quiet || \
             git commit -m "style: apply semantic line breaks
 
-          Source: ${{ github.ref_name }} @ ${{ github.sha }}"
+          Source: $SOURCE_BRANCH @ $SOURCE_SHA"
           git push origin main
 ```
 
 A similar job handles the reverse (`main` → `overleaf-sync` with `--join`).
+
+**Important:** Both directions share the same concurrency group (`semantic-linebreak`) so a split-triggered join (or vice versa) waits rather than racing.
 
 ---
 
@@ -357,13 +534,75 @@ Build `tests/test_linebreak.py` with fixtures covering:
 - Abbreviations (`e.g.`, `et al.`, `Fig.`, `Eq.`)
 - Inline math with periods
 - Display math environments
+- Display math environments with internal blank lines (the block scanner bug)
+- Nested LaTeX commands (`\footnote{See \citet{smith2024}.}`, `\textbf{\textit{text.}}`)
+- Structural command lines (`\section{}` stays on its own line)
+- Trailing `%` comments on prose lines
 - LaTeX commands with arguments
 - Citations (LaTeX and Markdown)
 - YAML frontmatter
 - Code blocks
-- Mixed prose/environment blocks
 - Idempotency (split on already-split, join on already-joined)
 - Round-trip stability
+- Real-document smoke test (see below)
+
+### Phase 2b: Integration tests on example manuscripts
+
+The `example_manuscripts/` directory contains two complete academic papers for integration testing:
+
+- **`example_manuscripts/infant_drug_tests/`** — Health economics paper with inverse propensity score weighting. Prose files are in `manuscript_for_journal/manuscript/` (00_abstract through 05_discussion).
+- **`example_manuscripts/medicaid_glp/`** — Policy evaluation paper with stacked diff-in-diff design. Prose files are in `manuscript/` (00_abstract through 06_discussion).
+
+**Prose-heavy files to test (sentence splitting candidates):**
+```
+example_manuscripts/infant_drug_tests/manuscript_for_journal/manuscript/00_abstract.tex
+example_manuscripts/infant_drug_tests/manuscript_for_journal/manuscript/01_intro.tex
+example_manuscripts/infant_drug_tests/manuscript_for_journal/manuscript/02_data.tex
+example_manuscripts/infant_drug_tests/manuscript_for_journal/manuscript/03_methods.tex
+example_manuscripts/infant_drug_tests/manuscript_for_journal/manuscript/04_results.tex
+example_manuscripts/infant_drug_tests/manuscript_for_journal/manuscript/05_discussion.tex
+example_manuscripts/medicaid_glp/manuscript/00_abstract.tex
+example_manuscripts/medicaid_glp/manuscript/01_introduction.tex
+example_manuscripts/medicaid_glp/manuscript/02_background.tex
+example_manuscripts/medicaid_glp/manuscript/03_methods.tex
+example_manuscripts/medicaid_glp/manuscript/04_data.tex
+example_manuscripts/medicaid_glp/manuscript/05_results.tex
+example_manuscripts/medicaid_glp/manuscript/06_discussion.tex
+```
+
+**Structural/exhibit files to exclude (but test graceful handling if accidentally included):**
+```
+example_manuscripts/infant_drug_tests/manuscript_for_journal/manuscript/06_figures_tables.tex
+example_manuscripts/infant_drug_tests/manuscript_for_journal/manuscript/08_appendix_figures_tables.tex
+example_manuscripts/medicaid_glp/manuscript/07_exhibits.tex
+```
+
+**Integration test procedure for each prose file:**
+```bash
+# 1. Split (paragraph → sentence-per-line)
+python semantic_linebreak.py --split $FILE --dry-run > /tmp/split.tex
+
+# 2. Verify idempotency (split again → same output)
+python semantic_linebreak.py --split /tmp/split.tex --dry-run > /tmp/split2.tex
+diff /tmp/split.tex /tmp/split2.tex  # must be empty
+
+# 3. Round-trip (split → join → split → compare)
+python semantic_linebreak.py --join /tmp/split.tex --dry-run > /tmp/joined.tex
+python semantic_linebreak.py --split /tmp/joined.tex --dry-run > /tmp/split3.tex
+diff /tmp/split.tex /tmp/split3.tex  # must be empty
+```
+
+These tests should be automated in `tests/test_linebreak.py` as parametrized pytest cases that iterate over all prose files. The example manuscripts are NOT copied into `tests/fixtures/` — they are referenced in-place from `example_manuscripts/`.
+
+**What to look for in manual inspection of split output:**
+- `\section*{...}` stays on its own line
+- `\label{...}` stays on its own line
+- `\footnote{...}` with nested citations is not broken mid-brace
+- Custom result macros like `\rxObSevenNineEmw{}` are preserved intact
+- Abbreviations (`e.g.`, `et al.`, `i.e.`) do not cause spurious line breaks
+- Inline math like `$N = 140{,}562$` is not split
+- Display math environments (align*, equation) are preserved verbatim
+- Lines with trailing `%` comments are handled correctly
 
 ### Phase 3: GitHub Action packaging
 
@@ -382,11 +621,13 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - run: pip install pysbd
+    - run: pip install pysbd==0.3.4
       shell: bash
     - run: python ${{ github.action_path }}/semantic_linebreak.py --${{ inputs.mode }} --files ${{ inputs.files }}
       shell: bash
 ```
+
+Pin `pysbd` to a specific version — a breaking change in sentence splitting would silently alter output.
 
 ### Phase 4: CI for this repo
 
@@ -406,9 +647,13 @@ In the template repo (`coady-claude-workflow`), add:
 2. **Dry-run on fixtures:** `python semantic_linebreak.py --split tests/fixtures/basic.tex --dry-run`
 3. **Idempotency:** Run split twice on same file → identical output
 4. **Round-trip:** `split → join → split` stable; `join → split → join` stable
-5. **End-to-end (split):** Push paragraph `.tex` to `overleaf-sync` → Action commits sentence-per-line to `main`
-6. **End-to-end (join):** Push sentence-per-line `.tex` to `main` → Action commits paragraph format to `overleaf-sync`
-7. **No-loop:** Bot commits on either branch do not re-trigger Actions
+5. **Nested braces:** `\footnote{See \citet{smith2024} for details.}` preserved as one unit
+6. **Environments with blank lines:** `\begin{figure}...\n\n...\caption{...}\n\end{figure}` stays intact
+7. **Structural commands:** `\section{Intro}` stays on its own line, not merged with following prose
+8. **Real-document smoke test:** Run the Phase 2b integration test procedure on all 13 prose files from both example manuscripts — idempotency and round-trip must pass on every file
+9. **End-to-end (split):** Push paragraph `.tex` to `overleaf-sync` → Action commits sentence-per-line to `main`
+10. **End-to-end (join):** Push sentence-per-line `.tex` to `main` → Action commits paragraph format to `overleaf-sync`
+11. **No-loop:** Bot commits on either branch do not re-trigger Actions
 
 ---
 
@@ -421,5 +666,11 @@ In the template repo (`coady-claude-workflow`), add:
 | pysbd misses an abbreviation | Custom abbreviation list in protection layer; easy to extend |
 | Merge conflicts | Replace-and-commit strategy, not merge |
 | YAML frontmatter corrupted | Extracted and reattached verbatim, never tokenized |
-| Display math split across paragraphs | Environment-aware scanner tracks `\begin`/`\end` nesting |
-| Race condition on rapid pushes | `concurrency` group with `cancel-in-progress: false` |
+| Display math split across paragraphs | Environment-aware block scanner (Pass 1) keeps `\begin`/`\end` paired regardless of internal blank lines |
+| Race condition on rapid pushes | Shared `concurrency` group across both directions with `cancel-in-progress: false` |
+| Nested braces in `\footnote{}`, `\textbf{\textit{}}` | Balanced-brace matcher instead of regex; iterative placeholder restore |
+| `\section{}` collapsed into prose | Structural command line detection; emitted as standalone segments |
+| Shell injection in workflow YAML | All GitHub context passed through `env:` variables, never interpolated in `run:` |
+| pysbd breaking change silently alters output | Version pinned in `requirements.txt` and `action.yml` |
+| Non-UTF-8 encoded files | Explicit `encoding='utf-8'`; skip and warn on decode errors |
+| Trailing `%` comments alter join semantics | Lines with trailing comments preserved as-is during join |

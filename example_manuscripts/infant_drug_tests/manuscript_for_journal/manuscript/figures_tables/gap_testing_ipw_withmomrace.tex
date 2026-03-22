@@ -1,0 +1,35 @@
+\begin{table}[ht]
+\centering
+\caption{Observed and Reweighted Means, and Decomposition Results}
+\label{tab:gap_testing_ipw}
+\begin{tabular}{llrr}
+  \toprule
+  \multicolumn{4}{c}{\textbf{Panel A: Observed and Reweighted Means}} \\
+  \cmidrule(lr){1-4}
+  Group & White & Black \\ 
+  \midrule
+  Observed & 0.0732 & 0.1650 \\ 
+  Reweighted & 0.1018 & 0.0918 \\ 
+  \bottomrule
+  \\
+  \toprule
+  \multicolumn{4}{c}{\textbf{Panel B: Decomposition Results (Reweighting Black Infants)}} \\
+  \cmidrule(lr){1-4}
+  Component & Gap & Standard Errors & Share of Raw Gap \\ 
+  \midrule
+  Raw Gap & 0.0917 & 0.0025 & 1.0000 \\ 
+  Reweighted Black - Observed White & 0.0186 & 0.0079 & 0.2030 \\ 
+  Observed Black - Reweighted Black & 0.0731 & 0.0079 & 0.7970 \\ 
+  \bottomrule
+  \\
+  \toprule
+  \multicolumn{4}{c}{\textbf{Panel C: Decomposition Results (Reweighting White Infants)}} \\
+  \cmidrule(lr){1-4}
+  Component & Gap & Standard Errors & Share of Raw Gap \\ 
+  \midrule
+  Raw Gap & 0.0917 & 0.0025 & 1.0000 \\ 
+  Reweighted White - Observed White & 0.0286 & 0.0128 & 0.3117 \\ 
+  Observed Black - Reweighted White & 0.0631 & 0.0130 & 0.6883 \\ 
+  \bottomrule
+\end{tabular}
+\end{table}

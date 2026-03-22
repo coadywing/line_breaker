@@ -1,0 +1,66 @@
+\documentclass[12pt]{article}
+\usepackage{code/paper}
+\usepackage{code/math}
+\addbibresource{references.bib}
+
+\title{Racial Disparities in Infant Drug Testing}
+\subtitle{A Research Note} 
+
+
+\author{
+  Mallory Dreyer, %
+  Cydney McGuire, %
+  Jennifer Silva, %
+  \newline
+  Kosali Simon, %
+  Coady Wing, %
+  Engy Ziedan
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\singlespacing
+\input{00_abstract}
+\end{abstract}
+
+\newpage
+
+\section*{Introduction}
+\input{01_intro}
+
+\section*{Data and Sample}
+\input{02_data}
+
+\section*{Methods}
+\input{03_methods}
+
+\section*{Results}
+\input{04_results}
+
+\section*{Discussion}
+\input{05_discussion}
+
+\newpage
+\printbibliography
+\newpage
+
+\section*{Tables and Figures}
+\input{06_figures_tables}
+
+\newpage
+\appendix 
+\setcounter{table}{0}
+\setcounter{figure}{0}
+\renewcommand{\thetable}{A\arabic{table}}
+\renewcommand{\thefigure}{A\arabic{figure}}
+
+\section*{Appendix}
+\input{07_appendix_text}
+\input{08_appendix_figures_tables}
+
+%\input{Response}
+
+\end{document}

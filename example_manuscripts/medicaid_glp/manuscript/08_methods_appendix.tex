@@ -1,0 +1,79 @@
+\section{Causal Estimands}
+
+In this appendix, we lay out notation in more detail and use it to define the causal estimand that is the target parameter of the analysis in the paper. We also compare our enrollment-weighted parameter of interest with a simpler unit-weighted effect.
+
+\subsection{Notation, Sample Sizes, and Enrollment}
+
+We use $s$ to index states and $t$ to index calendar quarters. As in the main text, $A_s$ denotes the quarter in which state $s$ first covered at least one obesity-indicated GLP-1 medication, with $A_s = NT$ for states that never adopted coverage during our study period. Use $\kappa_{pre}$ and $\kappa_{post}$ to define the length of the pre- and post-periods in a given research design. $\Omega_{\kappa}$ represents the set of adoption cohorts that are feasible to study given the event window, and we use $a \in \Omega_{\kappa}$ to index adoption cohorts or "sub-experiments" in the set.
+
+Within sub-experiment $a$, $N_a^{\text{treat}} = \sum_{s}\one{A_s = a}$ is the number of treated states, and $N_a^{\text{control}} = \sum_s \one{A_s = NT}$ is the number of clean control states. $N_{\Omega_{\kappa}}^{\text{treat}} = \sum_{a\in\Omega_{\kappa}} N_a^{\text{treat}}$ and $N_{\Omega_{\kappa}}^{\text{control}} = \sum_{a\in\Omega_{\kappa}} N_a^{\text{control}}$ give the number of treated and control states across all of the sub-experiments in the design.
+
+In the original data, we observe end of month Medicaid enrollment counts for each state. Let $E_{stm}$ denote the total number of people enrolled in Medicaid in state $s$ during month $m$ of quarter $t$. Since the SDUD data are quarterly, we aggregate the monthly enrollment data so that $M_{st} = \sum_{m} E_{stm}$ represents the total enrollee-months for state $s$ in quarter $t$.
+\begin{itemize}
+    \item Inside sub-experiment $a$, a state's total enrollee-months across all \emph{event times} is $M_s^{a} = \sum_{e = -\kappa_{pre}}^{\kappa_{post}} M_{s,a+e}$.
+
+    \item Aggregating to the cohort level, $M_{a}^{\text{treat}} = \sum_{s | A_s = a} M_{s}^{a}$ is total enrollee-months across all treated states and all event times in cohort $a$. Total enrollee-months among the clean controls across all event times is $M_{a}^{\text{control}} = \sum_{s | A_s = NT} M_{s}^{a}$.
+
+    \item Aggregating across adoption cohorts, $M_{\Omega_{\kappa}}^{\text{treat}} = \sum_{a \in \Omega_{\kappa}} M_{a}^{\text{treat}}$ represents total enrollee-months across all treated units in the study population. $M_{\Omega_{\kappa}}^{\text{control}} = \sum_{a \in \Omega_{\kappa}} M_{a}^{\text{control}}$ is total enrollee-months for the clean controls.
+\end{itemize}
+
+\subsection{Enrollment Weighted Average Causal Effects}
+
+Let $Y_{st}(a)$ and $Y_{st}(0)$ represent potential outcomes for the same state and quarter with and without coverage. The observed outcome is $Y_{st} = Y_{st}(0) +\sum_a \bp{Y_{st}(a)-Y_{st}(0)} \times \one{A_s = a}$. The enrollment-weighted group time ATT is:
+%
+\begin{align*}
+ATT(a,a+e) &= \E[M_s^{a}]{Y_{s,a+e}(a) - Y_{s,a+e}(0)}{A_s = a} \\
+&= \sum_{s | A_s = a} \bp{Y_{s,a+e}(a) - Y_{s,a+e}(0)} \times \frac{M_s^{a}}{M_{a}^{\text{treat}}}
+\end{align*}
+%
+The aggregate causal effect that we study in our main analysis is the enrollee-month weighted average of these group-time ATTs across adoption cohorts:
+%
+\begin{equation*}
+  \theta_{\Omega_{\kappa}}^{e} = \sum_{a \in \Omega_{\kappa}} ATT(a, a+e) \times \frac{M_a^{\text{treat}}}{M_{\Omega_{\kappa}}^{\text{treat}}}
+\end{equation*}
+%
+Thus, the aggregate is an enrollment-weighted average of enrollment-weighted group-time ATTs. Note that because the weights are based on total enrollee-months across all event times, they are fixed and do not change over event time. This avoids the mechanical relationship between time-varying weights and the denominator used to construct the per-enrollee-month dependent variable.
+
+\subsection{Unit-Weight Average Causal Effects}
+
+An alternative way to aggregate effects across sub-experiments is to ignore enrollment variation entirely and give equal weight to each state. In this case, the group-time ATT treats each state inside a sub-experiment equally:
+%
+\begin{align*}
+ATT^{uw}(a,a+e) &= \E{Y_{s,a+e}(a) - Y_{s,a+e}(0)}{A_s = a} \\
+&= \sum_{s | A_s = a} \bp{Y_{s,a+e}(a) - Y_{s,a+e}(0)} \times \frac{1}{N_a^{\text{treat}}}
+\end{align*}
+%
+The corresponding aggregate is:
+%
+\begin{equation*}
+  \theta_{\Omega_{\kappa}, uw}^{e} = \sum_{a \in \Omega_{\kappa}} ATT^{uw}(a,a+e) \times \frac{N_a^{\text{treat}}}{N_{\Omega_{\kappa}}^{\text{treat}}}.
+\end{equation*}
+%
+This unit-weighted aggregate represents the effect of coverage on the average treated state in the study population rather than the average treated enrollee-month.
+
+\subsection{Comparison of Estimates}
+
+Tables~\ref{tab:comparison_10state} and~\ref{tab:comparison_7state} compare enrollment-weighted and unit-weighted point estimates and standard errors for the 10-state and 7-state designs. Figures~\ref{fig:uw_levels_rx_combined}-\ref{fig:uw_spending_combined} show the level plots and event study plots. In the 7-state design, the two estimands agree closely for prescriptions and differ modestly for spending. In the 10-state design, the pattern is similar. Regardless of the precise definition of the target parameter of interest, the basic results of our study are quite consistent.
+
+
+\input{outputs/tables/appendix_comparison_10state}
+\FloatBarrier
+
+\input{outputs/tables/appendix_comparison_7state}
+\FloatBarrier
+
+% UW Prescription Levels
+\input{manuscript/figure_code/fig_uw_levels_rx_combined}
+\FloatBarrier
+
+% UW Prescription Event Studies
+\input{manuscript/figure_code/fig_uw_rx_combined}
+\FloatBarrier
+
+% UW Spending Levels
+\input{manuscript/figure_code/fig_uw_levels_spending_combined}
+\FloatBarrier
+
+% UW Spending Event Studies
+\input{manuscript/figure_code/fig_uw_spending_combined}
+\FloatBarrier

@@ -1,0 +1,36 @@
+\begin{landscape}
+\pagestyle{lscaped}
+\begin{table}[!htbp]
+\centering
+\small
+\begin{threeparttable}
+\caption{Comparison of Estimands: Obesity-Indicated GLP-1 Outcomes (10-State Design)}
+\label{tab:comparison_10state}
+\begin{tabular}{l cc cc}
+\toprule
+ & \multicolumn{2}{c}{Prescriptions per 100} & \multicolumn{2}{c}{Spending per 100 (\$)} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+Event Time & $\theta_e^{uw}$ & $\theta_e^{emw}$ & $\theta_e^{uw}$ & $\theta_e^{emw}$ \\
+\midrule
+  $-4$ & -0.0249 (0.0081) & -0.0231 (0.0060) & -29.8 (9.9) & -29.4 (7.6) \\
+  $-3$ & -0.0196 (0.0073) & -0.0161 (0.0047) & -23.2 (9.0) & -20.3 (5.8) \\
+  $-2$ & -0.0163 (0.0069) & -0.0096 (0.0047) & -19.8 (8.4) & -11.8 (5.7) \\
+  \midrule
+  $0$ & 0.0504 (0.0108) & 0.0610 (0.0091) & 63.5 (13.8) & 79.0 (11.4) \\
+  $1$ & 0.1024 (0.0203) & 0.1254 (0.0203) & 128.4 (26.2) & 161.4 (25.9) \\
+  $2$ & 0.0995 (0.0184) & 0.1341 (0.0184) & 125.8 (23.8) & 173.5 (25.1) \\
+  $3$ & 0.1170 (0.0195) & 0.1132 (0.0162) & 145.0 (25.4) & 143.2 (20.7) \\
+  $4$ & 0.1878 (0.0310) & 0.1820 (0.0257) & 227.6 (36.6) & 223.4 (30.7) \\
+  $5$ & 0.3056 (0.0513) & 0.3095 (0.0471) & 372.0 (60.6) & 381.6 (57.1) \\
+  $6$ & 0.4424 (0.0733) & 0.5413 (0.0517) & 538.2 (88.2) & 672.7 (67.4) \\
+  \midrule
+  Post-Period ATT & 0.1864 & 0.2095 & 228.6 & 262.1 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \emph{Notes.} Each cell reports the coefficient (standard error) from a stacked difference-in-differences regression of the indicated outcome on treatment $\times$ event time indicators. Standard errors clustered by state. $\theta_e^{uw}$ = unit-weight ATT; $\theta_e^{emw}$ = enrollee-month weighted ATT. Post-Period ATT is the unweighted average of the post-treatment coefficients.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\end{landscape}

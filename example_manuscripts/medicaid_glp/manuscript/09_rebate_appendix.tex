@@ -1,0 +1,64 @@
+\section{Rebates and Net Spending}\label{sec:appendix_b}
+
+The State Drug Utilization Data (SDUD) reports detailed information on Medicaid prescription drug reimbursements in state $\times$ quarter $\times$ plan type (FFS/MCO) $\times$ NDC code. The reimbursements reflect payments made to pharmacies at the point of dispensing; they are gross payments that do not include rebates that manufacturers are required to pay to state governments under the Medicaid Drug Rebate Program (MDRP). This appendix explains how we estimate the value of MDRP rebates for GLP-1 drugs using the NADAC and FSS as proxies for the unknown inputs to the MDRP rebate formula, building on earlier studies of drug rebates by \citet{clemanscope2023bestprice} and \citet{cbo2021drugprices}.
+
+\subsection{MDRP Rebate Formula}
+
+The structure of the Medicaid Drug Rebate Program (MDRP) is outlined in Section 1927 of the Social Security Act. The law stipulates that in order for any of its drugs to be eligible for Medicaid reimbursement, a manufacturer must establish an agreement with the Secretary of Health and Human Services committing it to provide information needed to compute a quarterly rebate using a specified formula.
+
+For brand name drugs, the per-unit rebate for NDC code $d$ in quarter $t$ depends on the (i) current quarter Average Manufacturer Price ($AMP_{dt}$), (ii) launch quarter Average Manufacturer Price ($AMP_{dl}$), and (iii) current quarter Best Price ($BP_{dt}$). 
+
+Although the per-unit rebate is determined by a known formula, the inputs to the formula are confidential. 
+
+\paragraph{Average Manufacturer Price.} $AMP_{dt}$ is the average price paid to the manufacturer by wholesalers and retail community pharmacies during quarter $t$. Manufacturers are required to make confidential quarterly reports of the AMP for each drug to CMS.
+
+\paragraph{Best Price.} $BP_{dt}$ is the lowest price that the manufacturer offers to any non-exempt purchaser in the United States. As with the AMP, manufacturers must confidentially report the best price for each drug to CMS.
+
+\paragraph{Inflation.} $AMP_{dl}$ is the AMP for drug $d$ in the drug's launch quarter. $CPI_t / CPI_l$ is the ratio of the Consumer Price Index for All Urban Consumers (CPI-U) in quarter $t$ to the CPI-U in the launch quarter.
+
+
+Under current law\footnote{Before 2024-Q1, total rebates were capped at 100\% of AMP; the American Rescue Plan removed this cap.}, the per-unit rebate amount is the sum of a \emph{basic rebate} and an \emph{inflationary rebate}:
+%
+\begin{align*}
+R_{dt}^{b} &= \underbrace{\max\bc{\bp{0.231 \times AMP_{dt}},\bp{AMP_{dt} - BP_{dt}}}}_{\text{basic rebate}} + \underbrace{\max\bc{0,\; AMP_{dt} - AMP_{dl} \times \frac{CPI_t}{CPI_l}}}_{\text{inflationary rebate}}
+\end{align*}
+%
+For generic drugs, the basic rebate is 13\% of AMP, with no best-price comparison:
+%
+\begin{align*}
+R_{dt}^{g} = 0.13 \times AMP_{dt} + \max\bc{0, AMP_{dt} - AMP_{dl} \times \frac{CPI_t}{CPI_{l}}}
+\end{align*}
+%
+The total rebate for a given brand name NDC in a given state and quarter is $R_{dt}^{b} \times Q_{dt}$, where $Q_{dt}$ is the number of units of the drug dispensed. (For generic drugs, the generic per-unit rate is used.) Net-of-rebate Medicaid spending is then gross reimbursement minus the total rebate.
+
+\subsection{Proxies for MDRP Inputs}
+
+We use data from the National Average Drug Acquisition Cost (NADAC) to approximate the AMP for each drug in each quarter. The earliest NADAC price is used to approximate each drug's AMP during the launch quarter. To approximate the best price, we use the Big 4 price from the VA Federal Supply Schedule (FSS) Pharmaceutical Pricing Data.
+
+\paragraph{NADAC Data.} The NADAC is computed from a monthly survey of retail community pharmacies that report invoice-based acquisition costs for each drug. In principle, the AMP is the average price paid to the manufacturer by wholesalers and retail community pharmacies, whereas the NADAC measures prices paid by retail pharmacies, many of which purchase from wholesalers. The NADAC therefore approximates the sum of the AMP and wholesale mark-ups:
+
+\[
+NADAC_{dt} = AMP_{dt} + Wholesale_{dt}
+\]
+
+To the extent that wholesalers charge a net markup on drugs they sell to pharmacies, we expect $NADAC > AMP$. In this sense, using the NADAC in place of the true AMP will tend to overestimate the size of the rebate and underestimate the net Medicaid spending on the drug.
+
+\paragraph{Federal Supply Schedule.} The Department of Veterans Affairs (VA) Federal Supply Schedule (FSS) Pharmaceutical Pricing Data is a publicly available catalog of contract prices for prescription drugs that may be purchased by eligible federal agencies. The information in the file comes from federal procurement contract records rather than retail transactions.
+
+For most drugs, the data contains two prices: the FSS price, and the Big 4 price. The FSS price is the price negotiated for federal agencies not eligible for the Big 4 price, which is available to the ``Big 4'' federal purchasers: Department of Defense, VA, Public Health Service, and the U.S. Coast Guard. The FSS price cannot exceed the Federal Ceiling Price, and the Big 4 price is often negotiated to be even lower than the ceiling. The Big 4 price is likely to fall below the manufacturer's best price, since Big 4 purchasers are exempt from the best-price calculation.
+
+\subsection{Stylized Example}
+
+Table~\ref{tab:rebate_example} illustrates the rebate calculation for each GLP-1 drug using California SDUD data for the fourth quarter of 2024. For each drug, the table reports the NADAC-based AMP proxy, the FSS and Big4 price proxies, the earliest observed NADAC (launch AMP proxy), the CPI inflation multiplier, and the estimated per-unit rebate implied by the statutory formula from Section~B.1.
+
+The inflationary rebate equals the positive part of the difference between the current NADAC and the inflation-adjusted launch NADAC. For recently launched drugs, i.e., Wegovy (2021), Mounjaro (2022), and Zepbound (2023), cumulative inflation since launch is modest, so the inflationary component is small or zero. Older drugs such as Trulicity (2014) and Byetta (2005) face substantial inflationary rebates because their current prices exceed the inflation-adjusted launch price by a wide margin.
+
+Across the obesity-indicated GLP-1s in Panel~A, the estimated rebate equals 23.1\% of the NADAC because in all three cases the gap between the NADAC and Big 4 price is smaller than 23.1\% of the NADAC. In Panel~B, estimated rebates range from 13\% (generic liraglutide) to 57\% (Byetta), with the variation driven almost entirely by the inflationary component.
+
+\input{outputs/tables/rebate_example_california}
+
+Our estimates are designed to approximate the MDRP rebate. States may negotiate supplemental rebates with manufacturers in exchange for preferred formulary placement, which can add substantially to effective rebate rates. Evidence from other drug classes suggests supplemental rebates may add 10--20 percentage points to the statutory minimum \citep{macpac2019rebates}. 
+
+
+
+

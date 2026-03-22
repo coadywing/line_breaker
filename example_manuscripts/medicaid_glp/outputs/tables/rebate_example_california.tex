@@ -1,0 +1,41 @@
+\begin{landscape}
+\pagestyle{empty}
+\begin{table}[!htbp]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{threeparttable}
+\caption{Illustrative MDRP Rebate Calculation: California Medicaid, Q4 2024}
+\label{tab:rebate_example}
+\begin{tabular}{@{} l r r r r r r r r r r @{}}
+\toprule
+ & & \multicolumn{6}{c}{Per-Unit Prices and Rebate (\$)} & \multicolumn{3}{c}{Aggregate (\$000s)} \\
+\cmidrule(lr){3-8} \cmidrule(lr){9-11}
+Drug (FDA Approval) & Units & NADAC & FSS & Big4 & \shortstack{Launch\\NADAC} & $\frac{CPI_t}{CPI_l}$ & \shortstack{Unit\\Rebate} & Gross & \shortstack{Total\\Rebate} & Net \\
+\midrule
+\multicolumn{11}{@{}l}{\emph{Panel A: Obesity-Indicated Drugs}} \\[3pt]
+Wegovy (2021) & 457,123 & 529.34 & 503.16 & 409.81 & 528.26 & 1.153 & 122.28 & 242,042 & 55,895 & 186,147 \\
+Zepbound (2023) & 100,692 & 511.02 & 410.10 & 396.10 & 509.46 & 1.017 & 118.05 & 51,009 & 11,886 & 39,123 \\
+Saxenda (2014) & 68,482 & 86.74 & 86.34 & 67.21 & 69.23 & 1.330 & 20.04 & 5,956 & 1,372 & 4,584 \\
+\midrule
+\multicolumn{11}{@{}l}{\emph{Panel B: Diabetes / Cardiac Drugs}} \\[3pt]
+Ozempic (2017) & 773,016 & 311.84 & 307.22 & 229.91 & 287.63 & 1.088 & 84.38 & 235,922 & 65,229 & 170,693 \\
+Trulicity (2014) & 92,562 & 471.72 & 436.30 & 339.48 & 291.68 & 1.294 & 233.53 & 43,658 & 21,615 & 22,043 \\
+Mounjaro (2022) & 71,690 & 515.86 & 395.85 & 380.03 & 467.13 & 1.064 & 154.76 & 37,022 & 11,095 & 25,928 \\
+Rybelsus (2019) & 1,131,232 & 31.16 & 30.72 & 22.73 & 24.70 & 1.222 & 9.39 & 35,217 & 10,627 & 24,590 \\
+Victoza (2010) & 36,002 & 87.43 & 89.22 & 86.69 & 53.12 & 1.355 & 35.67 & 3,173 & 1,284 & 1,888 \\
+Bydureon (2012) & 2,473 & 234.24 & 211.33 & 175.01 & 186.06 & 1.255 & 59.88 & 582 & 148 & 433 \\
+Soliqua (2016) & 4,966 & 57.10 & 40.93 & 40.53 & 40.41 & 1.290 & 21.57 & 280 & 107 & 172 \\
+Liraglutide$^{g}$ & 3,244 & 72.86 & --- & --- & 73.49 & 1.002 & 9.47 & 219 & 31 & 189 \\
+Xultophy (2016) & 1,396 & 82.99 & 72.12 & 59.97 & 61.39 & 1.280 & 27.46 & 117 & 38 & 78 \\
+Byetta (2005) & 65 & 466.25 & 438.90 & 349.58 & 233.73 & 1.355 & 266.33 & 30 & 17 & 13 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\scriptsize
+\item \emph{Notes.} Each row is one GLP-1 drug dispensed to California Medicaid enrollees in Q4~2024. Units is total units reimbursed from the SDUD, measured in ML for injectables and EA (each) for oral tablets. Per-unit prices are in dollars. NADAC is the units-weighted National Average Drug Acquisition Cost. FSS and Big4 are prices from the VA Federal Supply Schedule, converted from per-package prices using SDUD units per prescription. Launch NADAC is the earliest observed NADAC for the drug. $CPI_t/CPI_l$ is the ratio of Q4~2024 CPI-U to CPI-U in the quarter of the earliest NADAC observation. Rebate is the per-unit rebate from the statutory MDRP formula: $\max(0.231 \times \text{NADAC},\; \text{NADAC} - \text{Big4}) + \max(0,\; \text{NADAC} - \text{Launch NADAC} \times CPI_t/CPI_l)$. Aggregate columns are in thousands of dollars. Gross is total SDUD reimbursement. Rebate $=$ per-unit rebate $\times$ units. Net $=$ Gross $-$ Rebate. Dashes indicate prices not applicable to the rebate calculation. Drugs are sorted by descending gross reimbursement within each panel.
+\item[$g$] Generic drug; basic rebate is 13\% of AMP with no best-price comparison.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\end{landscape}

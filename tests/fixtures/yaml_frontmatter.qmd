@@ -1,0 +1,15 @@
+---
+title: "My Document"
+author: "Author Name"
+date: "2024-01-01"
+---
+
+This is the first sentence. This is the second sentence.
+
+```python
+x = 1
+y = 2
+print(x + y)
+```
+
+More prose after the code block. Another sentence here.

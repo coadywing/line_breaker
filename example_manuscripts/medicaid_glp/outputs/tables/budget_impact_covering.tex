@@ -1,0 +1,50 @@
+\begin{landscape}
+\pagestyle{lscaped}
+\begin{table}[!htbp]
+\centering
+\caption{Projected budget impact of Medicaid GLP-1 obesity coverage: covering states}
+\label{tab:budget_impact_covering}
+\begin{tabular}{@{} l l r rr rr @{}}
+\toprule
+ & & & \multicolumn{2}{c}{Average Post-Period} & \multicolumn{2}{c}{Event Time 9} \\
+\cmidrule(lr){4-5} \cmidrule(lr){6-7}
+State & Adoption & \shortstack{Enrollment\\(September 2025)} & \shortstack{Monthly\\Users} & \shortstack{Annual Net\\Spending (\$)} & \shortstack{Monthly\\Users} & \shortstack{Annual Net\\Spending (\$)} \\
+\midrule
+  California & 2023-Q1 & 11,978,256 & 42,238 & 477,682,515 & 98,341 & 1,080,410,097 \\
+  Pennsylvania & 2023-Q1 & 2,757,077 & 9,722 & 109,949,852 & 22,636 & 248,681,764 \\
+  North Carolina & 2024-Q3 & 2,535,360 & 8,940 & 101,107,969 & 20,815 & 228,683,420 \\
+  Michigan & 2022-Q1 & 2,174,909 & 7,669 & 86,733,495 & 17,856 & 196,171,600 \\
+  Virginia & 2023-Q1 & 1,512,223 & 5,332 & 60,306,149 & 12,415 & 136,398,905 \\
+  Massachusetts & 2024-Q1 & 1,411,397 & 4,977 & 56,285,295 & 11,588 & 127,304,640 \\
+  Tennessee & 2025-Q3 & 1,251,458 & 4,413 & 49,907,065 & 10,274 & 112,878,524 \\
+  Minnesota & 2023-Q2 & 1,185,328 & 4,180 & 47,269,858 & 9,732 & 106,913,756 \\
+  Missouri & 2024-Q4 & 1,133,687 & 3,998 & 45,210,459 & 9,308 & 102,255,861 \\
+  Wisconsin & 2023-Q2 & 1,033,372 & 3,644 & 41,209,984 & 8,484 & 93,207,688 \\
+  South Carolina & 2024-Q4 & 890,091 & 3,139 & 35,496,061 & 7,308 & 80,284,083 \\
+  Mississippi & 2023-Q4 & 512,797 & 1,808 & 20,449,902 & 4,210 & 46,253,065 \\
+  Kansas & 2024-Q2 & 333,192 & 1,175 & 13,287,410 & 2,736 & 30,053,123 \\
+  Utah & 2025-Q3 & 302,064 & 1,065 & 12,046,052 & 2,480 & 27,245,452 \\
+  Rhode Island & 2022-Q4 & 271,469 & 957 & 10,825,950 & 2,229 & 24,485,856 \\
+  Delaware & 2023-Q1 & 230,166 & 812 & 9,178,822 & 1,890 & 20,760,424 \\
+  New Hampshire & 2022-Q3 & 162,604 & 573 & 6,484,507 & 1,335 & 14,666,493 \\
+\midrule
+  \textbf{Subtotal (17 states)} &  & 29,675,450 & 104,643 & 1,183,431,344 & 243,635 & 2,676,654,748 \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.95\linewidth}
+\vspace{0.5em}
+\footnotesize
+\textit{Notes.}
+Projected monthly GLP-1 obesity drug users and annual Medicaid spending by state,
+extrapolating per-enrollee ATT estimates from the 7-state enrollee-month weighted stacked
+difference-in-differences design.
+``Average post-period'' uses the mean ATT across event times 0--9 (approximately 2.5 years post-adoption).
+``Event time 9'' uses the ATT at 9 quarters post-adoption, reflecting a more mature utilization level.
+Users is the implied number of enrollees filling a GLP-1 obesity prescription in a given month.
+Enrollment is total Medicaid enrollment in September 2025 from CMS monthly enrollment reports.
+Net spending subtracts estimated statutory Medicaid Drug Rebate Program (MDRP) rebates from gross reimbursement (see Appendix~B).
+Projections assume uniform per-enrollee effects across states and do not account for differences in
+demographics, formulary design, or supplemental rebates.
+\end{minipage}
+\end{table}
+\end{landscape}

@@ -13,27 +13,34 @@ This is packaged as a **reusable GitHub Action** so any academic paper repo can 
 
 Three-layer design:
 
-1. **Protection layer:** Regex scanner identifies "no-break zones" (math environments, code blocks, YAML frontmatter, LaTeX commands, citations) and replaces them with unique placeholders
+1. **Protection layer:** Identifies "no-break zones" (math environments, code blocks, YAML frontmatter, LaTeX commands, citations) and replaces them with unique placeholders
 2. **Tokenization layer:** `pysbd.Segmenter` (Pragmatic Segmenter) splits prose at true sentence boundaries, handling abbreviations like `e.g.`, `i.e.`, `et al.`, `Fig.`, `Eq.` correctly
 3. **Reassembly layer:** Restore placeholders, output one sentence per line (`--split`) or one paragraph per line (`--join`)
 
-### Block classification
+### Two-pass block scanner
 
-The parser splits files on blank lines into blocks. Each block is classified as **PROTECTED** (preserved verbatim) or **PROSE** (sentence-split or joined):
+**Pass 1 — Environment-aware grouping:** Scans line by line, tracking `\begin{}`/`\end{}` nesting depth. Blank lines inside environments do NOT create block boundaries — this ensures `\begin{figure}...\caption{}...\end{figure}` with internal blank lines stays as one block.
+
+**Pass 2 — Block classification:** Each block is classified as **PROTECTED** (preserved verbatim) or **PROSE** (sentence-split or joined).
 
 **Protected blocks:**
-- Display math: `$$...$$`, `\[...\]`, `\begin{equation}...`, `\begin{align}...`
-- LaTeX environments: `table`, `figure`, `tikzpicture`, `verbatim`, `itemize`, `enumerate`, `lstlisting`
+- Any block containing `\begin{env}` where env is in the protected set (equation, align, table, figure, tikzpicture, verbatim, itemize, enumerate, lstlisting, etc.)
+- Display math: `$$...$$`, `\[...\]`
 - Comment-only blocks (lines starting with `%`)
 - Pure LaTeX command blocks (all lines start with `\` or `%`)
 - YAML frontmatter (`---`), code fences (`` ``` ``), Quarto div fences (`:::`)
 - Markdown tables, lists
 
-**Inline protection (within prose blocks):**
+### Structural command lines
+
+Lines consisting entirely of a LaTeX structural command (`\section{}`, `\label{}`, `\input{}`, etc.) stay on their own line — never collapsed into adjacent prose.
+
+### Inline protection (within prose blocks)
 - Inline math: `$...$` (not `$$`)
-- LaTeX commands with args: `\command{...}`, `\command[...]{...}`
+- LaTeX commands with args: balanced-brace matcher handles nesting (e.g., `\footnote{See \citet{smith2024}.}`)
 - Markdown citations: `[@key, p. 5]`
 - Domain abbreviations: `et al.`, `cf.`, `Eq.`, `Fig.`, `Tab.`, `Sec.`, `No.`, `Vol.`, `pp.`, `Ref.`
+- Trailing `%` comments: stripped before segmentation, re-attached after
 
 ## Key Files
 
@@ -98,11 +105,14 @@ python semantic_linebreak.py --split tests/fixtures/basic.tex --dry-run
 1. **Abbreviations:** `e.g.`, `i.e.`, `et al.`, `cf.`, `vs.`, `Prof.`, `Eq.`, `Fig.` — must NOT cause a line break
 2. **Inline math with periods:** `$x = 3.14$` or `$y = mx + b$.` — period inside or after math is not a sentence boundary
 3. **Display math environments:** `\begin{equation}...\end{equation}`, `\begin{align}...\end{align}` — preserve verbatim, never split
-4. **Nested LaTeX commands:** `\textit{Some text with a period.}` — protect the entire command
-5. **Citations:** `\citep{smith2024}`, `\citet{smith2024}`, `[@smith2024, p. 5]` — protect from splitting
-6. **Code blocks and YAML:** Never touch content inside fences or frontmatter
-7. **Idempotency:** Running `--split` on already-split text must produce identical output. Same for `--join`.
-8. **Round-trip stability:** `split → join → split` must equal `split`. `join → split → join` must equal `join`.
+4. **Environments with internal blank lines:** `\begin{figure}...\n\n\caption{...}\n\end{figure}` must stay as one protected block
+5. **Nested LaTeX commands:** `\footnote{See \citet{smith2024} for details.}` — balanced-brace matcher must capture the entire span
+6. **Structural commands:** `\section{Introduction}` must stay on its own line, never collapsed with adjacent prose
+7. **Trailing comments:** `This is prose. % a comment` — comment stripped before segmentation, re-attached after
+8. **Citations:** `\citep{smith2024}`, `\citet{smith2024}`, `[@smith2024, p. 5]` — protect from splitting
+9. **Code blocks and YAML:** Never touch content inside fences or frontmatter
+10. **Idempotency:** Running `--split` on already-split text must produce identical output. Same for `--join`.
+11. **Round-trip stability:** `split → join → split` must equal `split`. `join → split → join` must equal `join`.
 
 ## Conventions
 

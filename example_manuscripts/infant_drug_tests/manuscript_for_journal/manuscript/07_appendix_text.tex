@@ -1,0 +1,21 @@
+\subsection*{Lab Tests and LOINC Codes}
+The INPC EMR data include lab tests and test results. For our sample of infants, we check to see if the infant had any meconium or umbilical cord drug tests performed. For those with tests performed, we check if any of the tests are positive or indicate the presence of the substance. The full list of LOINC codes for umbilical and meconium tests is in Appendix Table \ref{loinc_codes}. 
+
+\subsection*{Propensity Score Model}
+
+We estimate propensity scores by fitting a logistic regression of the race of the infant on a vector of demographic, clinical, and community attributes that may be associated with the risk of in-utero drug exposure. Let $W_i$ be a binary variable set to 1 if the infant is White and set to 0 if the infant is Black. Let $X_i$ be the infant's vector of clinically relevant covariates. The basic model is:
+
+$$
+Pr(W_i = 1 | X_i) = logit^{-1}\bp{X_i \beta}
+$$
+
+The goal of the model is to produce inverse propensity score weights that balance the covariate distribution in the sample. We started with a parsimonious model in which all covariates were entered separately and maternal age was entered as dummy variables for 5-year bins (20-24, 25-29, etc.). 
+
+The final model is in Appendix Table \ref{propensity_model}. And the third column in Appendix Table \ref{tab:balance_reweight} shows the reweighted means for the Black infants using the inverse propensity score weighting. The propensity score model is successful at forming a matched sample that is well balanced.
+
+Estimates based on inverse propensity score weights may be unreliable when there is a failure of overlap or a near failure of overlap in the covariate distributions in the White and Black samples. In these cases, the inverse propensity score weights may be very large or very small. Figure \ref{fig:weight_dist} shows the distribution of weights in our sample and shows that no observation receives a weight that represents more than 0.28\% of the sum of the weights in the sample. Figure \ref{fig:overlap} shows the binned distribution of estimated propensity scores in the White and Black samples. Both of these results indicate that our sample appears to have sufficient overlap and so we proceed without trimming.
+
+\subsection*{Covid-19 Pandemic}
+Appendix Table \ref{tab:covid_testing_by_race_period} shows how the testing rate and the positive testing rate differ by the racial group of the infant before March 2020 and after March 2020. The testing rate for White infants remains relatively stable, while the testing rate for Black infants decreases by nearly 4 percentage points. The positive testing rate for both Black and White infants is lower in the period from March 2020 and after. 
+
+Using INPC COVID-19 lab test data, we construct a measure of the positive test rate from 2020-2023 in Indiana counties. In appendix figures \ref{fig:figure_county_covid_test} and \ref{fig:figure_county_covid_pos}, we show the correlation between the COVID-19 positive test rate and the test rate and positive test rate by racial group of infant by county for births occurring from March 2020 and after. For both Black and White infants, there is a negative correlation between the COVID-19 positive test rate and the in-utero drug exposure test rate, though the correlation is more negative for Black infants. Similarly, there is a negative correlation between the  COVID-19 positive test rate and the in-utero drug exposure positive test rate for Black and White infants, with the Black infants having a more negative coefficient. 

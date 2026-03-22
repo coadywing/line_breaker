@@ -1,0 +1,17 @@
+name: 'Semantic Line Breaker'
+description: 'Convert between paragraph and sentence-per-line formatting for academic documents'
+inputs:
+  mode:
+    description: 'split or join'
+    required: true
+  files:
+    description: 'Path to file listing target files (one per line)'
+    required: false
+    default: '.linebreakfiles'
+runs:
+  using: 'composite'
+  steps:
+    - run: pip install pysbd==0.3.4
+      shell: bash
+    - run: python ${{ github.action_path }}/semantic_linebreak.py --${{ inputs.mode }} --files ${{ inputs.files }}
+      shell: bash

@@ -1,0 +1,39 @@
+\begin{landscape}
+\pagestyle{lscaped}
+\begin{table}[!htbp]
+\centering
+\small
+\begin{threeparttable}
+\caption{Comparison of Estimands: Obesity-Indicated GLP-1 Outcomes (7-State Design)}
+\label{tab:comparison_7state}
+\begin{tabular}{l cc cc}
+\toprule
+ & \multicolumn{2}{c}{Prescriptions per 100} & \multicolumn{2}{c}{Spending per 100 (\$)} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+Event Time & $\theta_e^{uw}$ & $\theta_e^{emw}$ & $\theta_e^{uw}$ & $\theta_e^{emw}$ \\
+\midrule
+  $-4$ & -0.0117 (0.0036) & -0.0173 (0.0067) & -14.2 (4.8) & -22.7 (9.0) \\
+  $-3$ & -0.0076 (0.0022) & -0.0105 (0.0040) & -9.0 (2.8) & -13.8 (5.4) \\
+  $-2$ & -0.0039 (0.0016) & -0.0035 (0.0012) & -4.7 (1.9) & -4.5 (1.5) \\
+  \midrule
+  $0$ & 0.0474 (0.0141) & 0.0604 (0.0102) & 60.3 (18.2) & 79.0 (12.9) \\
+  $1$ & 0.1132 (0.0273) & 0.1319 (0.0230) & 142.5 (35.2) & 170.5 (28.8) \\
+  $2$ & 0.1124 (0.0201) & 0.1464 (0.0155) & 140.9 (26.7) & 189.2 (21.4) \\
+  $3$ & 0.1006 (0.0206) & 0.1094 (0.0172) & 126.0 (26.2) & 139.9 (22.3) \\
+  $4$ & 0.1418 (0.0248) & 0.1645 (0.0199) & 173.0 (31.8) & 203.8 (25.6) \\
+  $5$ & 0.2516 (0.0539) & 0.2881 (0.0437) & 309.8 (67.9) & 358.6 (55.5) \\
+  $6$ & 0.3713 (0.0856) & 0.5271 (0.0614) & 454.3 (107.2) & 660.2 (80.2) \\
+  $7$ & 0.4278 (0.0971) & 0.5607 (0.0773) & 518.4 (120.0) & 689.2 (95.3) \\
+  $8$ & 0.5668 (0.1214) & 0.7167 (0.1076) & 680.6 (149.6) & 870.4 (130.7) \\
+  $9$ & 0.6847 (0.1447) & 0.8210 (0.1013) & 815.9 (174.4) & 986.9 (120.9) \\
+  \midrule
+  Post-Period ATT & 0.2818 & 0.3526 & 342.2 & 434.8 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \emph{Notes.} Each cell reports the coefficient (standard error) from a stacked difference-in-differences regression of the indicated outcome on treatment $\times$ event time indicators. Standard errors clustered by state. $\theta_e^{uw}$ = unit-weight ATT; $\theta_e^{emw}$ = enrollee-month weighted ATT. Post-Period ATT is the unweighted average of the post-treatment coefficients.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\end{landscape}
