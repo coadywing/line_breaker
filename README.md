@@ -11,6 +11,32 @@ A Python tool and GitHub Action that converts between paragraph format and one-s
 | `--split` | One paragraph per line | One sentence per line | Clean git diffs |
 | `--join` | One sentence per line | One paragraph per line | Overleaf readability |
 
+## Setup for your research repo
+
+You don't copy any files from this repo. Your research project just needs two files:
+
+**1. Create `.linebreakfiles` in your repo root** — list the prose files to convert:
+
+```
+manuscript/0_abstract.tex
+manuscript/1_introduction.tex
+manuscript/2_data.tex
+manuscript/3_methods.tex
+manuscript/4_results.tex
+manuscript/5_discussion.tex
+```
+
+**2. Create `.github/workflows/semantic-linebreak.yml`** — the workflow that calls this action. Copy the full YAML from the [workflow setup section](#step-3-add-the-workflow-yaml) below.
+
+That's it. The workflow references this action remotely via `uses: coadywing/line_breaker@main` — GitHub Actions pulls everything it needs at runtime. Nothing gets installed in your repo.
+
+### What happens after setup
+
+1. **You edit in Overleaf** → Overleaf pushes to `overleaf-sync` branch → the Action automatically splits to sentence-per-line on `main`
+2. **A co-author opens a PR against `main`** → clean diffs, one sentence per line → after merge, the Action joins back to paragraphs on `overleaf-sync` → Overleaf pulls the update
+
+You never run `semantic_linebreak.py` yourself unless you want to preview changes locally with `--dry-run`.
+
 ## Quick start: local CLI
 
 ```bash
